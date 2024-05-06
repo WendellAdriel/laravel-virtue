@@ -1,0 +1,70 @@
+{
+    "name": "wendelladriel/laravel-virtue",
+    "description": "Extend the Laravel Framework with a collection of attributes",
+    "type": "library",
+    "keywords": [
+        "laravel",
+        "attributes",
+        "extend",
+        "configuration"
+    ],
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "WendellAdriel\\Virtue\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "support": {
+        "issues": "https://github.com/WendellAdriel/laravel-virtue/issues",
+        "source": "https://github.com/WendellAdriel/laravel-virtue"
+    },
+    "authors": [
+        {
+            "name": "Wendell Adriel",
+            "email": "wendelladriel.ti@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "illuminate/database": "^11.0",
+        "illuminate/support": "^11.0"
+    },
+    "require-dev": {
+        "larastan/larastan": "^2.0",
+        "laravel/pint": "^1.14",
+        "orchestra/testbench": "^8.0|^9.0",
+        "pestphp/pest": "^2.0",
+        "pestphp/pest-plugin-faker": "^2.0",
+        "phpstan/phpstan": "^1.10"
+    },
+    "scripts": {
+        "lint": "pint",
+        "test:lint": "pint --test",
+        "test:unit": "./vendor/bin/pest --order-by random",
+        "test:static": "phpstan analyse --memory-limit 1G",
+        "test": [
+            "@test:lint",
+            "@test:unit",
+            "@test:static"
+        ]
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "WendellAdriel\\Virtue\\Providers\\VirtueServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
