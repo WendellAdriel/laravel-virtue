@@ -14,7 +14,7 @@ use WendellAdriel\Virtue\Models\Concerns\Virtue;
     'email',
 ])]
 #[Database(table: 'users_guarded')]
-class UserGuarded extends Model
+final class UserGuarded extends Model
 {
     use Virtue;
 }
