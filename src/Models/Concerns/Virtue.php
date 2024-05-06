@@ -9,6 +9,7 @@ use ReflectionAttribute;
 use ReflectionClass;
 use WendellAdriel\Virtue\Models\Attributes\Cast;
 use WendellAdriel\Virtue\Models\Attributes\Database;
+use WendellAdriel\Virtue\Models\Attributes\DispatchesOn;
 use WendellAdriel\Virtue\Models\Attributes\Fillable;
 use WendellAdriel\Virtue\Models\Attributes\Hidden;
 use WendellAdriel\Virtue\Models\Attributes\PrimaryKey;
@@ -26,6 +27,7 @@ trait Virtue
         $this->applyFillable();
         $this->applyHidden();
         $this->applyCasts();
+        $this->handleEvents();
 
         self::handleRelationsKeys($this);
     }
@@ -116,6 +118,29 @@ trait Virtue
 
         if ($castsArray !== []) {
             $this->mergeCasts($castsArray);
+        }
+    }
+
+    private function handleEvents(): void
+    {
+        $dispatchesAttributes = $this->resolveMultipleAttributes(DispatchesOn::class);
+        if ($dispatchesAttributes->isEmpty()) {
+            return;
+        }
+
+        $eventsArray = [];
+        foreach ($dispatchesAttributes as $dispatchesAttribute) {
+            /** @var DispatchesOn $attribute */
+            $attribute = $dispatchesAttribute->newInstance();
+            if (! in_array($attribute->event, $this->getObservableEvents())) {
+                continue;
+            }
+
+            $eventsArray[$attribute->event] = $attribute->class;
+        }
+
+        if ($eventsArray !== []) {
+            $this->dispatchesEvents = $eventsArray;
         }
     }
 
