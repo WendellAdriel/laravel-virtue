@@ -9,6 +9,7 @@ use ReflectionClass;
 use WendellAdriel\Virtue\Models\Attributes\Cast;
 use WendellAdriel\Virtue\Models\Attributes\Database;
 use WendellAdriel\Virtue\Models\Attributes\Fillable;
+use WendellAdriel\Virtue\Models\Attributes\Hidden;
 
 trait Virtue
 {
@@ -20,6 +21,7 @@ trait Virtue
     {
         $this->applyDatabaseCustomizations();
         $this->applyFillable();
+        $this->applyHidden();
         $this->applyCasts();
 
         self::handleRelationsKeys($this);
@@ -56,6 +58,20 @@ trait Virtue
         $fillableAttribute = $attribute->newInstance();
         if ($fillableAttribute->fields !== []) {
             $this->fillable($fillableAttribute->fields);
+        }
+    }
+
+    private function applyHidden(): void
+    {
+        $attribute = $this->resolveSingleAttribute(Hidden::class);
+        if (is_null($attribute)) {
+            return;
+        }
+
+        /** @var Hidden $hiddenAttribute */
+        $hiddenAttribute = $attribute->newInstance();
+        if ($hiddenAttribute->fields !== []) {
+            $this->makeHidden($hiddenAttribute->fields);
         }
     }
 
