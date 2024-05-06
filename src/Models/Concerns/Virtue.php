@@ -18,7 +18,8 @@ trait Virtue
 {
     use HasRelations;
 
-    private ?Collection $classAttributes = null;
+    /** @var array<class-string,Collection>|null */
+    private static ?array $classAttributes = [];
 
     public function initializeVirtue(): void
     {
@@ -164,11 +165,12 @@ trait Virtue
 
     private function classAttributes(): Collection
     {
-        if (is_null($this->classAttributes)) {
+        $class = static::class;
+        if (! array_key_exists($class, self::$classAttributes) || is_null(self::$classAttributes[$class])) {
             $reflectionClass = new ReflectionClass(static::class);
-            $this->classAttributes = Collection::make($reflectionClass->getAttributes());
+            self::$classAttributes[$class] = Collection::make($reflectionClass->getAttributes());
         }
 
-        return $this->classAttributes;
+        return self::$classAttributes[$class];
     }
 }
