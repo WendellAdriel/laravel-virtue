@@ -9,6 +9,7 @@ use ReflectionAttribute;
 use ReflectionClass;
 use WendellAdriel\Virtue\Models\Attributes\Cast;
 use WendellAdriel\Virtue\Models\Attributes\Database;
+use WendellAdriel\Virtue\Models\Attributes\DispatchesOn;
 use WendellAdriel\Virtue\Models\Attributes\Fillable;
 use WendellAdriel\Virtue\Models\Attributes\Hidden;
 use WendellAdriel\Virtue\Models\Attributes\PrimaryKey;
@@ -17,7 +18,8 @@ trait Virtue
 {
     use HasRelations;
 
-    private ?Collection $classAttributes = null;
+    /** @var array<class-string,Collection>|null */
+    private static ?array $classAttributes = [];
 
     public function initializeVirtue(): void
     {
@@ -26,6 +28,7 @@ trait Virtue
         $this->applyFillable();
         $this->applyHidden();
         $this->applyCasts();
+        $this->handleEvents();
 
         self::handleRelationsKeys($this);
     }
@@ -119,6 +122,29 @@ trait Virtue
         }
     }
 
+    private function handleEvents(): void
+    {
+        $dispatchesAttributes = $this->resolveMultipleAttributes(DispatchesOn::class);
+        if ($dispatchesAttributes->isEmpty()) {
+            return;
+        }
+
+        $eventsArray = [];
+        foreach ($dispatchesAttributes as $dispatchesAttribute) {
+            /** @var DispatchesOn $attribute */
+            $attribute = $dispatchesAttribute->newInstance();
+            if (! in_array($attribute->event, $this->getObservableEvents())) {
+                continue;
+            }
+
+            $eventsArray[$attribute->event] = $attribute->class;
+        }
+
+        if ($eventsArray !== []) {
+            $this->dispatchesEvents = $eventsArray;
+        }
+    }
+
     /**
      * @param  class-string  $attributeClass
      */
@@ -139,11 +165,12 @@ trait Virtue
 
     private function classAttributes(): Collection
     {
-        if (is_null($this->classAttributes)) {
+        $class = static::class;
+        if (! array_key_exists($class, self::$classAttributes) || is_null(self::$classAttributes[$class])) {
             $reflectionClass = new ReflectionClass(static::class);
-            $this->classAttributes = Collection::make($reflectionClass->getAttributes());
+            self::$classAttributes[$class] = Collection::make($reflectionClass->getAttributes());
         }
 
-        return $this->classAttributes;
+        return self::$classAttributes[$class];
     }
 }
