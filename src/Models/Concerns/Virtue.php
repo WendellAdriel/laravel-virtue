@@ -4,22 +4,25 @@ declare(strict_types=1);
 
 namespace WendellAdriel\Virtue\Models\Concerns;
 
+use Illuminate\Support\Collection;
 use ReflectionAttribute;
 use ReflectionClass;
 use WendellAdriel\Virtue\Models\Attributes\Cast;
 use WendellAdriel\Virtue\Models\Attributes\Database;
 use WendellAdriel\Virtue\Models\Attributes\Fillable;
 use WendellAdriel\Virtue\Models\Attributes\Hidden;
+use WendellAdriel\Virtue\Models\Attributes\PrimaryKey;
 
 trait Virtue
 {
     use HasRelations;
 
-    private ?ReflectionClass $reflectionClass = null;
+    private ?Collection $classAttributes = null;
 
     public function initializeVirtue(): void
     {
         $this->applyDatabaseCustomizations();
+        $this->applyPrimaryKeyCustomization();
         $this->applyFillable();
         $this->applyHidden();
         $this->applyCasts();
@@ -46,6 +49,27 @@ trait Virtue
         $this->timestamps = $databaseAttribute->timestamps;
     }
 
+    private function applyPrimaryKeyCustomization(): void
+    {
+        /** @var ReflectionAttribute|null $attribute */
+        $attribute = $this->resolveSingleAttribute(PrimaryKey::class);
+        if (is_null($attribute)) {
+            return;
+        }
+
+        /** @var PrimaryKey $primaryKeyAttribute */
+        $primaryKeyAttribute = $attribute->newInstance();
+        if (! is_null($primaryKeyAttribute->name)) {
+            $this->setKeyName($primaryKeyAttribute->name);
+        }
+        if (! is_null($primaryKeyAttribute->type)) {
+            $this->setKeyType($primaryKeyAttribute->type);
+        }
+        if (! is_null($primaryKeyAttribute->incrementing)) {
+            $this->setIncrementing($primaryKeyAttribute->incrementing);
+        }
+    }
+
     private function applyFillable(): void
     {
         /** @var ReflectionAttribute|null $attribute */
@@ -63,6 +87,7 @@ trait Virtue
 
     private function applyHidden(): void
     {
+        /** @var ReflectionAttribute|null $attribute */
         $attribute = $this->resolveSingleAttribute(Hidden::class);
         if (is_null($attribute)) {
             return;
@@ -77,9 +102,8 @@ trait Virtue
 
     private function applyCasts(): void
     {
-        /** @var array<ReflectionAttribute>|null $castAttributes */
         $castAttributes = $this->resolveMultipleAttributes(Cast::class);
-        if (is_null($castAttributes)) {
+        if ($castAttributes->isEmpty()) {
             return;
         }
 
@@ -100,26 +124,26 @@ trait Virtue
      */
     private function resolveSingleAttribute(string $attributeClass): ?ReflectionAttribute
     {
-        $reflectionClass = $this->reflectionClass();
-        $attributes = $reflectionClass->getAttributes($attributeClass);
+        $classAttributes = $this->classAttributes();
 
-        return $attributes === [] ? null : $attributes[0];
+        return $classAttributes->filter(fn (ReflectionAttribute $attribute) => $attribute->getName() === $attributeClass)
+            ->first();
     }
 
-    private function resolveMultipleAttributes(string $attributeClass): ?array
+    private function resolveMultipleAttributes(string $attributeClass): Collection
     {
-        $reflectionClass = $this->reflectionClass();
-        $attributes = $reflectionClass->getAttributes($attributeClass);
+        $classAttributes = $this->classAttributes();
 
-        return $attributes === [] ? null : $attributes;
+        return $classAttributes->filter(fn (ReflectionAttribute $attribute) => $attribute->getName() === $attributeClass);
     }
 
-    private function reflectionClass(): ReflectionClass
+    private function classAttributes(): Collection
     {
-        if (is_null($this->reflectionClass)) {
-            $this->reflectionClass = new ReflectionClass(static::class);
+        if (is_null($this->classAttributes)) {
+            $reflectionClass = new ReflectionClass(static::class);
+            $this->classAttributes = Collection::make($reflectionClass->getAttributes());
         }
 
-        return $this->reflectionClass;
+        return $this->classAttributes;
     }
 }
