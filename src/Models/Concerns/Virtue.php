@@ -30,9 +30,6 @@ trait Virtue
         }
     }
 
-    /**
-     * @return Fillable|null
-     */
     private function resolveFillableAttribute(): ?Fillable
     {
         $reflectionClass = new ReflectionClass(static::class);
