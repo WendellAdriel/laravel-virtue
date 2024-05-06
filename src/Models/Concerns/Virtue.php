@@ -28,7 +28,7 @@ trait Virtue
     private function applyDatabaseCustomizations(): void
     {
         /** @var ReflectionAttribute|null $attribute */
-        $attribute = $this->resolveSingleAttribute(Fillable::class);
+        $attribute = $this->resolveSingleAttribute(Database::class);
         if (is_null($attribute)) {
             return;
         }
