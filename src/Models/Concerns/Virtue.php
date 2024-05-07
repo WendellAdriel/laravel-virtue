@@ -6,16 +6,17 @@ namespace WendellAdriel\Virtue\Models\Concerns;
 
 use Illuminate\Support\Collection;
 use ReflectionAttribute;
-use ReflectionClass;
 use WendellAdriel\Virtue\Models\Attributes\Cast;
 use WendellAdriel\Virtue\Models\Attributes\Database;
 use WendellAdriel\Virtue\Models\Attributes\DispatchesOn;
 use WendellAdriel\Virtue\Models\Attributes\Fillable;
 use WendellAdriel\Virtue\Models\Attributes\Hidden;
 use WendellAdriel\Virtue\Models\Attributes\PrimaryKey;
+use WendellAdriel\Virtue\Support\HasAttributesReflection;
 
 trait Virtue
 {
+    use HasAttributesReflection;
     use HasRelations;
 
     /** @var array<class-string,Collection>|null */
@@ -143,34 +144,5 @@ trait Virtue
         if ($eventsArray !== []) {
             $this->dispatchesEvents = $eventsArray;
         }
-    }
-
-    /**
-     * @param  class-string  $attributeClass
-     */
-    private function resolveSingleAttribute(string $attributeClass): ?ReflectionAttribute
-    {
-        $classAttributes = $this->classAttributes();
-
-        return $classAttributes->filter(fn (ReflectionAttribute $attribute) => $attribute->getName() === $attributeClass)
-            ->first();
-    }
-
-    private function resolveMultipleAttributes(string $attributeClass): Collection
-    {
-        $classAttributes = $this->classAttributes();
-
-        return $classAttributes->filter(fn (ReflectionAttribute $attribute) => $attribute->getName() === $attributeClass);
-    }
-
-    private function classAttributes(): Collection
-    {
-        $class = static::class;
-        if (! array_key_exists($class, self::$classAttributes) || is_null(self::$classAttributes[$class])) {
-            $reflectionClass = new ReflectionClass(static::class);
-            self::$classAttributes[$class] = Collection::make($reflectionClass->getAttributes());
-        }
-
-        return self::$classAttributes[$class];
     }
 }
