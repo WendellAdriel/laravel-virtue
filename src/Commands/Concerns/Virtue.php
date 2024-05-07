@@ -26,9 +26,15 @@ trait Virtue
     public function getArguments(): array
     {
         $arguments = [];
-        $requiredArguments = $this->buildArgumentsList(RequiredArgument::class);
+        $generalArguments = $this->buildArgumentsList(Argument::class);
+
+        $requiredArguments = $this->buildArgumentsList(RequiredArgument::class)
+            ->merge($generalArguments->where('mode', InputArgument::REQUIRED));
+
         [$arrayArguments, $nonArrayArguments] = $requiredArguments->partition(fn (array $argument) => $argument['mode'] > InputArgument::REQUIRED);
-        $optionalArguments = $this->buildArgumentsList(OptionalArgument::class);
+
+        $optionalArguments = $this->buildArgumentsList(OptionalArgument::class)
+            ->merge($generalArguments->filter(fn (array $argument) => $argument['mode'] === InputArgument::OPTIONAL || $argument['mode'] === InputArgument::IS_ARRAY));
 
         foreach ($nonArrayArguments as $argument) {
             $arguments[] = $argument;

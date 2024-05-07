@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace WendellAdriel\Virtue\Commands\Attributes;
 
+use Attribute;
 use Closure;
 
-abstract class Argument
+#[Attribute(Attribute::TARGET_CLASS | Attribute::IS_REPEATABLE)]
+class Argument
 {
     /**
      * @param  string|int|bool|array<mixed>|float|null  $default
