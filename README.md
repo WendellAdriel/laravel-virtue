@@ -1,8 +1,8 @@
 <div align="center">
-    <!-- <img src="https://github.com/WendellAdriel/laravel-virtue/raw/main/art/laravel-virtue-banner.png" alt="Virtue" height="400"/> -->
+    <img src="https://github.com/WendellAdriel/laravel-virtue/raw/main/art/cover.png" alt="Virtue" height="400"/>
     <p>
         <h1>Virtue</h1>
-        Extend the Laravel Framework with a collection of attributes
+        <strong>Extend the Laravel Framework with a collection of attributes</strong>
     </p>
 </div>
 
